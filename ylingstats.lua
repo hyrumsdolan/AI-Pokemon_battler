@@ -5,7 +5,6 @@
 
 dofile "data/tables.lua" -- Tables with games data, and various data - including names
 dofile "data/memory.lua" -- Functions and Pokemon table generation
-local tableFuckYou = require("table")
 
 local gamedata = getGameInfo() -- Gets game info
 version, lan, gen, sel = gamedata[1],gamedata[2],gamedata[3],gamedata[4]
@@ -112,69 +111,38 @@ if version ~= 0 and games[version][lan] ~= nil then
                     gui.text(settings["pos"][1][1]+sel[1]*4/10,settings["pos"][3][2], "PID: "..bit.tohex(lastpid)) -- Last PID
 				end
 
-				-- Only prints once a pokemon is changed, i can change this to something else? 
 				if input.get()["C"] then
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-
-					mypokestats = myPokemon["stats"]
-					tableFuckYou.remove(mypokestats, 1)
-					currentPokemonStatus = tostring(myPokemon["speciesname"]) .. " - " .. tostring(myPokemon["hp"]["current"]) .. "/" ..tostring(myPokemon["hp"]["max"]) .. " " .. tostring(mypokestats) .. " "
-
-					for i=1,4 do -- For each move
-						if table["move"][myPokemon["move"][i]] ~= nil then 
-							currentPokemonStatus = currentPokemonStatus .. table["move"][myPokemon["move"][i]].." ("..myPokemon["pp"][i]..") "
+					CKeyMemory = 1
+				else 
+					if (CKeyMemory == 1) then
+						-- Function to build the Pokémon status string
+						local function getPokemonStatus(pokemon)
+							local stats = {unpack(pokemon["stats"], 2)} -- Excluding the first element from the stats
+							local status = tostring(pokemon["speciesname"]) .. " - " .. tostring(pokemon["hp"]["current"]) .. "/" .. tostring(pokemon["hp"]["max"]) .. " " .. tostring(stats) .. " "
+							for i = 1, 4 do -- For each move
+								if table["move"][pokemon["move"][i]] ~= nil then 
+									status = status .. table["move"][pokemon["move"][i]].." ("..pokemon["pp"][i]..") "
+								end
+							end
+							return status
 						end
+					
+						-- Building status strings for my Pokémon and enemy Pokémon
+						local currentPokemonStatus = getPokemonStatus(myPokemon)
+						local enemyPokemonStatus = getPokemonStatus(enemyPokemon)
+					
+						-- Combining and printing the statuses
+						local combined = currentPokemonStatus .. '** ' .. enemyPokemonStatus
+						print("\n")
+						print(combined)
+						CKeyMemory = 0
 					end
-
-					mypokestats = enemyPokemon["stats"]
-					tableFuckYou.remove(mypokestats, 1)
-					enemyPokemonStatus = tostring(enemyPokemon["speciesname"]) .. " - " .. tostring(enemyPokemon["hp"]["current"]) .. "/" ..tostring(enemyPokemon["hp"]["max"]) .. " " .. tostring(mypokestats) .. " "
-
-					for i=1,4 do -- For each move
-						if table["move"][enemyPokemon["move"][i]] ~= nil then 
-							enemyPokemonStatus = enemyPokemonStatus .. table["move"][enemyPokemon["move"][i]].." ("..enemyPokemon["pp"][i]..") "
-						end
-					end
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-					print("\n")
-
-					mypokestats = myPokemon["stats"]
-					tableFuckYou.remove(mypokestats, 1)
-					currentPokemonStatus = tostring(myPokemon["speciesname"]) .. " - " .. tostring(myPokemon["hp"]["current"]) .. "/" ..tostring(myPokemon["hp"]["max"]) .. " " .. tostring(mypokestats) .. " "
-
-					for i=1,4 do -- For each move
-						if table["move"][myPokemon["move"][i]] ~= nil then 
-							currentPokemonStatus = currentPokemonStatus .. table["move"][myPokemon["move"][i]].." ("..myPokemon["pp"][i]..") "
-						end
-					end
-
-					mypokestats = enemyPokemon["stats"]
-					tableFuckYou.remove(mypokestats, 1)
-					enemyPokemonStatus = tostring(enemyPokemon["speciesname"]) .. " - " .. tostring(enemyPokemon["hp"]["current"]) .. "/" ..tostring(enemyPokemon["hp"]["max"]) .. " " .. tostring(mypokestats) .. " "
-
-					for i=1,4 do -- For each move
-						if table["move"][enemyPokemon["move"][i]] ~= nil then 
-							enemyPokemonStatus = enemyPokemonStatus .. table["move"][enemyPokemon["move"][i]].." ("..enemyPokemon["pp"][i]..") "
-						end
-					end
-
-					local combined = currentPokemonStatus .. '** ' .. enemyPokemonStatus
-					print(combined)
-					-- The command to copy the string to the clipboard on Windows
-					local command = 'echo ' .. combined .. '| clip'
-					os.execute(command)
 				end
+				
+
+					
+				
+				
 				
                 
                 -- All gens
