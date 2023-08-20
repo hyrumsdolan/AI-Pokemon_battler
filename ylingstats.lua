@@ -6,6 +6,11 @@
 dofile "data/tables.lua" -- Tables with games data, and various data - including names
 dofile "data/memory.lua" -- Functions and Pokemon table generation
 
+-- Probably bad formatting place, but I suck at code and this makes it work
+local counter = 0 -- Counter for GPT Color
+local gptLoading = 0
+
+
 local gamedata = getGameInfo() -- Gets game info
 version, lan, gen, sel = gamedata[1],gamedata[2],gamedata[3],gamedata[4]
 
@@ -76,6 +81,20 @@ if version ~= 0 and games[version][lan] ~= nil then
 				tmptext = tmpletter..substatus[1].." ("..table["modes"][mode]..")" -- Dirty tmp var for current mode
                 helditem = pokemon["helditem"] == 0 and "none" or table["items"][gen][pokemon["helditem"]]
 				
+				-- Color change to show ChatGPT is working
+				local colorOption = counter % 4
+				local gptColor
+				if colorOption == 0 then
+					gptColor = "red"
+				elseif colorOption == 1 then
+					gptColor = "green"
+				elseif colorOption == 2 then
+					gptColor = "blue"
+				else
+					gptColor = "yellow"
+				end
+
+
                 -- GEN 1 & 2
 				if gen <= 2 then
 					for i=1,5 do -- For each DV
@@ -111,8 +130,14 @@ if version ~= 0 and games[version][lan] ~= nil then
                     gui.text(settings["pos"][1][1]+sel[1]*4/10,settings["pos"][3][2], "PID: "..bit.tohex(lastpid)) -- Last PID
 				end
 
+
+
+
+
+
 				if input.get()["C"] then
 					CKeyMemory = 1
+					gptLoading = 1 -- GPT Loading Text Counter
 				else 
 					if (CKeyMemory == 1) then
 						-- Function to build the Pokémon status string
@@ -126,7 +151,11 @@ if version ~= 0 and games[version][lan] ~= nil then
 							end
 							return status
 						end
-					
+						
+						-- New fetchPokemon to over come lastpid check
+						myPokemon = fetchPokemon(games[version][lan][2] + games[version][lan][4] * (substatus[1] - 1))
+    					enemyPokemon = fetchPokemon(games[version][lan][3] + games[version][lan][4] * (substatus[2] - 1))
+
 						-- Building status strings for my Pokémon and enemy Pokémon
 						local currentPokemonStatus = getPokemonStatus(myPokemon)
 						local enemyPokemonStatus = getPokemonStatus(enemyPokemon)
@@ -134,19 +163,43 @@ if version ~= 0 and games[version][lan] ~= nil then
 						-- Combining and printing the statuses
 						local combined = currentPokemonStatus .. '** ' .. enemyPokemonStatus
 						print("\n")
-						print(combined)
+						-- print(combined)
+
+						local python_script_path = "test.py" -- Path to the Python script (updated to match the correct filename)
+						local input_data = combined -- Data to send to Python
+
+						-- Function to call the Python script and get a response
+						local function call_python(data)
+							local command = "echo '" .. data .. "' | python " .. python_script_path
+							local handle = io.popen(command)
+							local result = handle:read("*a")
+							handle:close()
+							return result
+						end
+
+						response_from_python = call_python(input_data)
+						print("Response from Python: " .. response_from_python)
+
+						gptLoading = 0 -- Counter for displaying GPT loading text
+						counter = counter + 1 --Counter for UI color change
 						CKeyMemory = 0
 					end
 				end
 				
-
+				if (counter == 0 and gptLoading == 0) then
+					gptText = "Press C to ask ChatGPT"
+				elseif (gptLoading == 1) then
+					gptText = "Loading... :)"
+				else
+					gptText = response_from_python
+				end
 					
 				
 				
 				
                 
                 -- All gens
-				gui.text(settings["pos"][1][1], settings["pos"][1][2]+sel[2]/16, pokemon["species"]..": "..pokemon["speciesname"].." - "..pokemon["hp"]["current"].."/"..pokemon["hp"]["max"], tmpcolor) -- Pkmn National Number, Species name and HP
+				gui.text(settings["pos"][1][1], settings["pos"][1][2]+sel[2]/16, gptText, gptColor) -- Pkmn National Number, Species name and HP
                 frame = version == "POKEMON EMER" and "F. E/R: "..emu.framecount().."/"..memory.readdwordunsigned(0x020249C0) or "F. E: "..emu.framecount()
                 gui.text(settings["pos"][3][1],settings["pos"][3][2], frame) -- Emu frame counter
 				
