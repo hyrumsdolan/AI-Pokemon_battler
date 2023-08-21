@@ -138,6 +138,9 @@ if version ~= 0 and games[version][lan] ~= nil then
 				if input.get()["C"] then
 					CKeyMemory = 1
 					gptLoading = 1 -- GPT Loading Text Counter
+					isMyPokemonDead = 0 
+					isEnemyPokemonDead = 0
+					
 				else 
 					if (CKeyMemory == 1) then
 						-- Function to build the Pokémon status string
@@ -146,7 +149,7 @@ if version ~= 0 and games[version][lan] ~= nil then
 							local status = tostring(pokemon["speciesname"]) .. " - " .. tostring(pokemon["hp"]["current"]) .. "/" .. tostring(pokemon["hp"]["max"]) .. " " .. tostring(stats) .. " "
 							for i = 1, 4 do -- For each move
 								if table["move"][pokemon["move"][i]] ~= nil then 
-									status = status .. table["move"][pokemon["move"][i]].." ("..pokemon["pp"][i]..") "
+									status = status .. table["move"][pokemon["move"][i]].."#".. i .. " ("..pokemon["pp"][i]..") "
 								end
 							end
 							return status
@@ -159,13 +162,24 @@ if version ~= 0 and games[version][lan] ~= nil then
 						-- Building status strings for my Pokémon and enemy Pokémon
 						local currentPokemonStatus = getPokemonStatus(myPokemon)
 						local enemyPokemonStatus = getPokemonStatus(enemyPokemon)
+
+						myCurrentHP = myPokemon["hp"]["current"]
+						enemyCurrentHP = enemyPokemon["hp"]["current"]
+						if my_current_hp == 0 then
+							isMyPokemonDead = 1
+						end
+						
+						if enemy_current_hp == 0 then
+							isEnemyPokemonDead = 1
+						end
+						
 					
 						-- Combining and printing the statuses
 						local combined = currentPokemonStatus .. '** ' .. enemyPokemonStatus
 						print("\n")
-						-- print(combined)
+						print(combined)
 
-						local python_script_path = "test.py" -- Path to the Python script (updated to match the correct filename)
+						local python_script_path = "ChatGPTCall.py" -- Path to the Python script (updated to match the correct filename)
 						local input_data = combined -- Data to send to Python
 
 						-- Function to call the Python script and get a response
@@ -177,12 +191,23 @@ if version ~= 0 and games[version][lan] ~= nil then
 							return result
 						end
 
+						print(vba.framecount())
 						response_from_python = call_python(input_data)
-						print("Response from Python: " .. response_from_python)
+						gptText = string.sub(response_from_python, 1,-5) .. "!"
+						moveNumber = tonumber(string.sub(response_from_python, -3, -3))
+						print("Response from Python: " .. response_from_python .."|")
+						print(moveNumber)
+						
+					
+						
+						
 
 						gptLoading = 0 -- Counter for displaying GPT loading text
 						counter = counter + 1 --Counter for UI color change
 						CKeyMemory = 0
+						inputListener = 1
+						storedFrame = emu.framecount()
+
 					end
 				end
 				
@@ -190,11 +215,22 @@ if version ~= 0 and games[version][lan] ~= nil then
 					gptText = "Press C to ask ChatGPT"
 				elseif (gptLoading == 1) then
 					gptText = "Loading... :)"
-				else
-					gptText = response_from_python
+				
 				end
 					
 				
+				
+
+				
+
+
+
+
+
+
+				
+
+
 				
 				
                 
@@ -281,4 +317,85 @@ else -- Game not in the data table
     print("Language: "..bit.tohex(lan))
 end
 
-gui.register(main)
+
+
+
+
+print('hi')
+
+
+
+
+print('hello')
+
+while true do
+    gui.register(main)
+	if inputListener == 1 then
+		joypad.set(1, {A=true})
+		emu.frameadvance()
+		emu.frameadvance()
+		emu.frameadvance()
+		emu.frameadvance()
+		emu.frameadvance()
+		if moveNumber == 1 then
+			print("Number 1 works")
+			joypad.set(1, {up=true})
+			emu.frameadvance()
+			joypad.set(1, {left=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {A=true})
+			print("Path 1: Pressed A")
+			emu.frameadvance()
+			inputListener = 0
+		end
+		if moveNumber == 2 then
+			print("Number 2 works")
+			joypad.set(1, {up=true})
+			emu.frameadvance()
+			joypad.set(1, {left=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {right=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {A=true})
+			print("Path 2: Pressed Right, then A")
+			emu.frameadvance()
+			inputListener = 0
+		end
+		if moveNumber == 3 then
+			print("Number 3 works")
+			joypad.set(1, {up=true})
+			emu.frameadvance()
+			joypad.set(1, {left=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {down=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {A=true})
+			print("Path 3: Pressed Down, then A")
+			emu.frameadvance()
+			inputListener = 0
+		end
+		if moveNumber == 4 then
+			print("Number 4 works")
+			joypad.set(1, {up=true})
+			emu.frameadvance()
+			joypad.set(1, {left=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {down=true})
+			emu.frameadvance()
+			joypad.set(1, {right=true})
+			emu.frameadvance()
+			emu.frameadvance()
+			joypad.set(1, {A=true})
+			emu.frameadvance()
+			print("Path 4: Pressed Down, then Right, then A")
+			inputListener = 0
+		end
+	end
+	emu.frameadvance()
+end

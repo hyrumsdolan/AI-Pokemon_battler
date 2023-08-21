@@ -28,14 +28,16 @@ These moves are then formatted to be short to reduce token usage (Once debugging
 EX: (note: the {stats} are in the order from above)
   Torchic - 24/24 {12, 12, 17, 14, 12} Scratch (33) Growl (40) Focus Energy (30) ** Wurmple - 1/14 {6, 6, 6, 6, 5} Tackle (34) String Shot (39)
 
-This string is sent to a test.py to send it to chatGPT and then returns a 5 word limit response that is shown in the top display
+This string is sent to a test.py to send it to chatGPT and then returns [PokemonName] use [Move]! that is shown in the top display
 
-As of now the user needs to input the moves.
+Inputs are automated and assume the cursor is hovering over "Fight"
 
 ## TODO
 Minimum Expectations:
-* Set up commands for GPT to enact moves on it's own
+* Set up a listener for when a pokemon levels up. This will need to end Chat's input so it doesn't mess up learning moves or evolutions. It can just see if a base stat has increased.
+*Set up a listener for if the enemy has died. Give User a chance to change out pokemon (Also will allow for GPT to choose own pokemon in future)
 * Add detection for when battle is started (remove the need for a key press)
+* Know party information and have the ability to swap out pokemon
 * Beat the Elite Four
   
 Quality of Life
